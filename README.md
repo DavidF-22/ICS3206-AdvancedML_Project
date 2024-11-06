@@ -15,9 +15,9 @@ To accomplish this, open the folder in the terminal and run this command.
 
 `On Windows Use`
 ```
-python hello.py
+python Template_Matching.py
 ```
 `On Max or Linux Use`
 ```
-python3 hello.py
+python3 Template_Matching.py
 ```
