@@ -8,16 +8,16 @@ Download the following and make sure they are kept in the same directory
 - PyTorch_AugmentingData.ipynb
 - Template_Matching.py
 
-The next step is to unzip the dataset, keeping it in the same directory as the other files, before executing the Jupyter Notebook. In the notebook, one can change the amount of augmented images that are created by changing the <span style="color:orange">num_of_iterations_per_image</span> variable. By default, it is set to 50.
+The next step is to unzip the dataset, keeping it in the same directory as the other files, before executing the Jupyter Notebook. In the notebook, one can change the number of augmented images created by changing the `num_of_iterations_per_image` variable. By default, it is set to 50.
 
 The last step is to run the python script from your preferred IDE or the terminal.
 To accomplish this, open the folder in the terminal and run this command.
 
-<span style="color:orange">On Windows Use</span>
+`On Windows Use`
 ```
 python hello.py
 ```
-<span style="color:orange">On Max or Linux Use</span>
+`On Max or Linux Use`
 ```
 python3 hello.py
 ```
