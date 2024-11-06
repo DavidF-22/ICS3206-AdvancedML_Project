@@ -110,14 +110,29 @@ def template_matching(template_imgs, target_img) -> None:
 
 
 def main() -> None:
-    # parameters
+    # dataset path
     dataset_path = "ConstellationDataset"
-    target_image_path = f"{dataset_path}/targetImage1.png"
 
     # check if the dataset exists
     if os.path.exists(dataset_path):
         # print completion message
         print("----- <Dataset Found and Loaded Successfully> -----")
+        
+        # call menu function
+        # this is done such that only the chosen constellation will be seached for effectivly reducing computation time and resources
+        userInput = menu(dataset_path)
+        
+        # choosing target image based on userInput
+        if userInput in ["Orion", "Gemini", "Canis Major", "Taurus", "Cygnus", "Cassiopeia"]:
+            img = "targetImage1.png"
+        elif userInput in ["Cancer", "Scorpius", "Libra", "Leo"]: 
+            img = "targetImage2.png"
+        else:
+            # print error message
+            print("!!! <No Target Image Available> !!!")
+        
+        # construct the path to the target image
+        target_image_path = os.path.join(dataset_path, img)
         
         # check if the target image exists
         if os.path.exists(target_image_path):
@@ -133,10 +148,6 @@ def main() -> None:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
             print("----- <Target Image Displayed Successfully> -----\n")
-            
-            # call menu function
-            # this is done such that only the chosen constellation will be seached for effectivly reducing computation time and resources
-            userInput = menu(dataset_path)
             
             # contruct the path to the chosen constellation
             class_path = os.path.join(dataset_path, userInput)
