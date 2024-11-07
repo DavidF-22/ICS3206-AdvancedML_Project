@@ -1,6 +1,7 @@
 # imports
 import os
 import cv2  # pip install opencv-python
+import time
 
 
 
@@ -58,6 +59,7 @@ def menu(dataset) -> str:
 
 def template_matching(template_imgs, target_img) -> None:
     # parameters
+    results = []
     output_path = "Results"
     # check if the output folder exists else create it
     if not os.path.exists(output_path):
@@ -80,18 +82,39 @@ def template_matching(template_imgs, target_img) -> None:
             # create a copy of the target image
             target_image_copy = target_img.copy()
             
+            # start timer
+            start_time = time.time()
+            
             # perform template matching by convolution
             result = cv2.matchTemplate(target_image_copy, template_img, method)
+            
+            # end timer
+            end_time = time.time()
+            
+            # calculate time taken
+            time_taken = end_time - start_time
+            
             # obtain the min and max values and their locations
-            _, _, min_loc, max_loc = cv2.minMaxLoc(result)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
             
             # if the method is TM_SQDIFF or TM_SQDIFF_NORMED, use min_loc
             if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-                top_left = min_loc
+                top_left = min_loc  # top left corner
+                score = min_val     # score 
             else:
-                top_left = max_loc
+                top_left = max_loc  # top left corner
+                score = max_val     # score
             # calculate the bottom right corner
             bottom_right = (top_left[0] + width, top_left[1] + height)
+            
+            # store the result
+            results.append({
+                'template': os.path.basename(template_path), 
+                'method': method_name, 
+                'score': score,
+                # round the time taken to 4 decimal places
+                'time_taken': round(time_taken, 4),  
+            })
             
             # draw a rectangle around the matched template
             cv2.rectangle(target_image_copy, top_left, bottom_right, 255, 2)
@@ -103,44 +126,38 @@ def template_matching(template_imgs, target_img) -> None:
 
             # save the output image
             cv2.imwrite(output_file_path, target_image_copy)
-            print(f"----- <Output Image Saved as {output_filename} in {output_path}> -----")
+            print(f"----- <Processed {output_filename} - Score: {round(score, 2)} - TimeTaken: {time_taken:.4f}s> -----")
             
     print("\n----- <Done> -----\n")
+    
+    # sort the results based on the score in descending order
+    top_results = sorted(results, key=lambda x: x['score'], reverse=True)[:5]
+    
+    # display the top 5 matches
+    print("----- <Top Matches> -----")
+    for res in top_results:
+        print(f"Template: {res['template']} - Method: {res['method']} - Score: {round(res['score'], 2)} - TimeTaken: {res['time_taken']}s\n")
 
 
 
 def main() -> None:
     # dataset path
     dataset_path = "ConstellationDataset"
+    # path to the target image
+    target_image_path = f"{dataset_path}/targetImage1.png"
 
     # check if the dataset exists
     if os.path.exists(dataset_path):
         # print completion message
         print("----- <Dataset Found and Loaded Successfully> -----")
         
-        # call menu function
-        # this is done such that only the chosen constellation will be seached for effectivly reducing computation time and resources
-        userInput = menu(dataset_path)
-        
-        # choosing target image based on userInput
-        if userInput in ["Orion", "Gemini", "Canis Major", "Taurus", "Cygnus", "Cassiopeia"]:
-            img = "targetImage1.png"
-        elif userInput in ["Cancer", "Scorpius", "Libra", "Leo"]: 
-            img = "targetImage2.png"
-        else:
-            # print error message
-            print("!!! <No Target Image Available> !!!")
-        
-        # construct the path to the target image
-        target_image_path = os.path.join(dataset_path, img)
-        
         # check if the target image exists
-        if os.path.exists(target_image_path):
-            
+        if os.path.exists(target_image_path): 
+                       
             # load the target image as a grayscale image
             target_image = cv2.imread(target_image_path, 0)
             # displaying a completion message
-            print("----- <Target Image Found and Loaded Successfully> -----\n")
+            print("----- <Target Image Found and Loaded Successfully> -----\n")#
             
             # display target image
             print("----- <Displaying Target Image> -----")
@@ -148,6 +165,10 @@ def main() -> None:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
             print("----- <Target Image Displayed Successfully> -----\n")
+            
+            # call menu function
+            # this is done such that only the chosen constellation will be seached for effectivly reducing computation time and resources
+            userInput = menu(dataset_path)
             
             # contruct the path to the chosen constellation
             class_path = os.path.join(dataset_path, userInput)
