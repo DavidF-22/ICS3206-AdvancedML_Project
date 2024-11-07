@@ -4,13 +4,13 @@ This repo will serve as a backup for this project implementation and possible fu
 
 ## How To Use
 Download the following and make sure they are kept in the same directory
-- ConstellationDataset.zip
+- ConstellationDataset folder
 - PyTorch_AugmentingData.ipynb
 - Template_Matching.py
 
-The next step is to unzip the dataset, keeping it in the same directory as the other files, before executing the Jupyter Notebook. In the notebook, one can change the number of augmented images created by changing the `num_of_iterations_per_image` variable. By default, it is set to 50.
+To augment the data open the Jupyter notebook and run each block. Variables can be modified as needed, for example. One can change the number of augmented images created by changing the `num_of_iterations_per_image` variable. By default, it is set to 50.
 
-The last step is to run the python script from your preferred IDE or the terminal.
+Then, run the python script from your preferred IDE or the terminal.
 To accomplish this, open the folder in the terminal and run this command.
 
 `On Windows Use`
