@@ -6,24 +6,38 @@ import time
 
 
 # function to load images from a specified folder
-def load_images_from_folder(folder) -> list:
+def load_images_from_folder(folder, skip_dirs=None):
     # initialize empty list to store the images and their paths
     images = []
     
-    # iterate over each file in the folder
-    for file in os.listdir(folder):
-        # check if the file has an image extension
-        if "_aug_"in file and file.endswith(('jpg', 'jpeg', 'png')):
-            img_path = os.path.join(folder, file)         # Form the full file path
-            img = cv2.imread(img_path)                  # Read image using OpenCV
-            
-            if img is not None:                         # Ensure image was loaded successfully
-                images.append((img, img_path))          # Append image with its path as a tuple
+    # if no directories to skip are specified, initialize to an empty list
+    if skip_dirs is None:
+        skip_dirs = []
+    
+    # walking/going through the folder, including all subfolders
+    for root, _, files in os.walk(folder):
+        # skip the root folder - this makes sure to save only the images in the subfolders/classes
+        # if root == folder:
+        #     continue  # Skip files directly in the root folder
+        
+        # skip any directories specified in skip_dirs
+        if any(skip in root for skip in skip_dirs):
+            continue  # Skip this directory and its contents
+        
+        # iterate over each file in the folder
+        for file in files:
+            # check if the file has an image extension
+            if file.endswith(('jpg', 'jpeg', 'png')):
+                img_path = os.path.join(root, file)         # Form the full file path
+                img = cv2.imread(img_path)                  # Read image using OpenCV
+                
+                if img is not None:                         # Ensure image was loaded successfully
+                    images.append((img, img_path))          # Append image with its path as a tuple
                 
     # return images list
     return images
 
-def list_classes(dataset) -> list:
+def list_classes(dataset):
     # define a list to store the classes
     classes = []
     
@@ -57,10 +71,10 @@ def menu(dataset) -> str:
             # display error message
             print("!!! <Invalid class name. Please try again.> !!!")
 
-def template_matching(template_imgs, target_img) -> None:
+def template_matching(template_imgs, target_img):
     # parameters
     results = []
-    output_path = "Results"
+    output_path = "Results_TemplateMatching"                # path to store the output images
     # check if the output folder exists else create it
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -140,32 +154,42 @@ def template_matching(template_imgs, target_img) -> None:
 
 
 
-def main() -> None:
-    # dataset path
-    dataset_path = "ConstellationDataset"
-    # path to the target image
-    target_image_path = f"{dataset_path}/targetImage1.png"
+def load_target_image(target_image_path):
+    # load the target image as a grayscale image
+    target_image = cv2.imread(target_image_path, 0)
+    
+    # check if target_image is not None
+    if target_image is not None:
+        # displaying a completion message
+        print("----- <Target Image Found and Loaded Successfully> -----\n")
+        
+        # display target image
+        print("----- <Displaying Target Image> -----")
+        cv2.imshow("Target Image", target_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        print("----- <Target Image Displayed Successfully> -----\n")
+        
+    # return the target image
+    return target_image
+
+
+def main():
+    # parameters
+    dataset_path = "ConstellationDataset"                                  # path to the dataset
+    target_image_path = f"{dataset_path}/TargetImages/targetImage1.png"      # path to the target image
+    skip_dirs = ["TargetImages"]                                             # directories to skip
 
     # check if the dataset exists
     if os.path.exists(dataset_path):
         # print completion message
         print("----- <Dataset Found and Loaded Successfully> -----")
         
-        # check if the target image exists
-        if os.path.exists(target_image_path): 
-                       
-            # load the target image as a grayscale image
-            target_image = cv2.imread(target_image_path, 0)
-            # displaying a completion message
-            print("----- <Target Image Found and Loaded Successfully> -----\n")#
-            
-            # display target image
-            print("----- <Displaying Target Image> -----")
-            cv2.imshow("Target Image", target_image)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-            print("----- <Target Image Displayed Successfully> -----\n")
-            
+        # get target image
+        target_image = load_target_image(target_image_path)
+        
+        # check if target image is not None
+        if target_image is not None:
             # call menu function
             # this is done such that only the chosen constellation will be seached for effectivly reducing computation time and resources
             userInput = menu(dataset_path)
@@ -174,7 +198,7 @@ def main() -> None:
             class_path = os.path.join(dataset_path, userInput)
             
             # obtain the templates for the chosen constellation
-            template_imgs = load_images_from_folder(class_path)
+            template_imgs = load_images_from_folder(class_path, skip_dirs)
             print(f"----- <Loaded {len(template_imgs)} images from the dataset> -----\n")
             
             # call the template matching function
@@ -183,14 +207,18 @@ def main() -> None:
         else:
             # displaying an error message
             print("!!! <Target Image Not Found> !!!")
-            
     else:
         # displaying an error message
         print("!!! <Dataset Not Found> !!!")
+        
+    # cv2 cleanup
+    cv2.destroyAllWindows()
+    
 
 
-       
-main()
+
+if __name__ == "__main__":
+    main()
 
 '''
 Refereces:
