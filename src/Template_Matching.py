@@ -54,7 +54,7 @@ def list_classes(dataset):
     # return list
     return classes
 
-def menu(dataset) -> str:
+def menu(dataset):
     # display menu
     print("----- <Menu> -----")
     valid_classes = list_classes(dataset)
@@ -154,12 +154,22 @@ def template_matching(template_imgs, target_img):
 
 
 
-def load_target_image(target_image_path):
+def load_target_image(target_image_path, class_name):
     # load the target image as a grayscale image
     target_image = cv2.imread(target_image_path, 0)
     
     # check if target_image is not None
     if target_image is not None:
+        if class_name in ['Gemini', 'Orion', 'Canis Major', 'Taurus', 'Cassiopeia', 'Cygnus'] and not os.path.basename(target_image_path).split('.')[0] in ['targetImage1', 'targetImage1-NoLine']:
+            # displaying an error message
+            print("!!! <Target Image Invalid. Please Use 'targetImage2' or 'targetImage2-NoLine'> !!!")
+            return None
+            
+        elif class_name in ['Scorpius', 'Libra', 'Leo', 'Cancer']:
+            # displaying an error message
+            print("!!! <Target Image Invalid. Please Use 'targetImage1' or 'targetImage1-NoLine'> !!!")
+            return None
+            
         # displaying a completion message
         print("----- <Target Image Found and Loaded Successfully> -----\n")
         
