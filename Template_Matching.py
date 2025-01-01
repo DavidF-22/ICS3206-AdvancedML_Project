@@ -27,7 +27,7 @@ def load_images_from_folder(folder, skip_dirs=None):
         # iterate over each file in the folder
         for file in files:
             # check if the file has an image extension
-            if file.endswith(('jpg', 'jpeg', 'png')):
+            if '_aug_' in file and file.endswith(('jpg', 'jpeg', 'png')):
                 img_path = os.path.join(root, file)         # Form the full file path
                 img = cv2.imread(img_path)                  # Read image using OpenCV
                 
@@ -70,6 +70,8 @@ def menu(dataset):
         else:
             # display error message
             print("!!! <Invalid class name. Please try again.> !!!")
+            
+
 
 def template_matching(template_imgs, target_img):
     # parameters
@@ -131,7 +133,7 @@ def template_matching(template_imgs, target_img):
             })
             
             # draw a rectangle around the matched template
-            cv2.rectangle(target_image_copy, top_left, bottom_right, 255, 2)
+            cv2.rectangle(target_image_copy, top_left, bottom_right, (0, 255, 0), 2)
             
             # construct the filename based on the template name and method name
             template_name = os.path.splitext(os.path.basename(template_path))[0]
@@ -145,16 +147,16 @@ def template_matching(template_imgs, target_img):
     print("\n----- <Done> -----\n")
     
     # sort the results based on the score in descending order
-    top_results = sorted(results, key=lambda x: x['score'], reverse=True)[:5]
+    top_results = sorted(results, key=lambda x: x['score'], reverse=True)[:10]
     
     # display the top 5 matches
     print("----- <Top Matches> -----")
-    for res in top_results:
-        print(f"Template: {res['template']} - Method: {res['method']} - Score: {round(res['score'], 2)} - TimeTaken: {res['time_taken']}s\n")
+    for result in top_results:
+        print(f"Template: {result['template']} - Method: {result['method']} - Score: {round(result['score'], 2)} - TimeTaken: {result['time_taken']}s\n")
 
 
 
-def load_target_image(target_image_path, class_name):
+def load_target_image(target_image_path, class_name, display=True):
     # load the target image as a grayscale image
     target_image = cv2.imread(target_image_path, 0)
     
@@ -174,14 +176,16 @@ def load_target_image(target_image_path, class_name):
         print("----- <Target Image Found and Loaded Successfully> -----\n")
         
         # display target image
-        print("----- <Displaying Target Image> -----")
-        cv2.imshow("Target Image", target_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-        print("----- <Target Image Displayed Successfully> -----\n")
+        if display:
+            print("----- <Displaying Target Image> -----")
+            cv2.imshow("Target Image", target_image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+            print("----- <Target Image Displayed Successfully> -----\n")
         
     # return the target image
     return target_image
+
 
 
 def main():
@@ -189,30 +193,33 @@ def main():
     dataset_path = "ConstellationDataset"                                  # path to the dataset
     target_image_path = f"{dataset_path}/TargetImages/targetImage1.png"      # path to the target image
     skip_dirs = ["TargetImages"]                                             # directories to skip
-
+    
     # check if the dataset exists
     if os.path.exists(dataset_path):
         # print completion message
-        print("----- <Dataset Found and Loaded Successfully> -----")
+        print("\n----- <Dataset Found and Loaded Successfully> -----\n")
         
+        # call menu function
+        # this is done such that only the chosen constellation will be seached for effectivly reducing computation time and resources
+        userInput = menu(dataset_path)
+        
+        # contruct the path to the chosen constellation
+        class_path = os.path.join(dataset_path, userInput)
+    
         # get target image
-        target_image = load_target_image(target_image_path)
+        target_image = load_target_image(target_image_path, userInput, display=False)
         
         # check if target image is not None
         if target_image is not None:
-            # call menu function
-            # this is done such that only the chosen constellation will be seached for effectivly reducing computation time and resources
-            userInput = menu(dataset_path)
-            
-            # contruct the path to the chosen constellation
-            class_path = os.path.join(dataset_path, userInput)
-            
             # obtain the templates for the chosen constellation
             template_imgs = load_images_from_folder(class_path, skip_dirs)
-            print(f"----- <Loaded {len(template_imgs)} images from the dataset> -----\n")
             
-            # call the template matching function
-            template_matching(template_imgs, target_image)
+            if template_imgs:
+                print(f"----- <Loaded {len(template_imgs)} images from the dataset> -----\n")
+                # call the template matching function
+                template_matching(template_imgs, target_image)
+            else:
+                print(f"!!! <No valid images found in {userInput}. Skipping template matching> !!!")
             
         else:
             # displaying an error message
